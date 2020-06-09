@@ -12,8 +12,7 @@
         @include('commons.navbar')
         
         
-            {{-- エラ〜メッセージ　--}}
-            @include('commons.error_tasks')
+          
         
 
         <div class="container">
