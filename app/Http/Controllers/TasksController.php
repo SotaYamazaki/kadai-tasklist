@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Task;
 
+use Auth;
+
 class TasksController extends Controller
 {
     /**
@@ -15,11 +17,30 @@ class TasksController extends Controller
     public function index()
     {
         //
-        $tasks = Task::all();
+    $data = [];
+     if (\Auth::check()) {
+        
+         $user = \Auth::user();
+            // ユーザの投稿の一覧を作成日時の降順で取得
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            
+                $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+
+         
+         return view('tasks.index', ['tasks' => $tasks,]);
+         
+     
+        
 
         
-        return view('tasks.index', ['tasks' => $tasks,]);
         
+        
+    }else {
+        return view('welcome', $data);
+    }
     }
 
     /**
@@ -31,6 +52,7 @@ class TasksController extends Controller
     {
         //
         $task = new Task;
+        
         return view('tasks.create', ['task' => $task,]);
     }
 
@@ -44,12 +66,18 @@ class TasksController extends Controller
     {
         $this->validate($request, ['status' => 'required|max:10', 'content' => 'required',]);
         //
-        $task = new Task;
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
+
+        $request->user()->tasks()->create([
+                'content' => $request->content,
+                'status' => $request->status,
+                
+            ]);
+                
         
-        return redirect('/');
+                
+            
+       
+        return back();
     }
 
     /**
@@ -110,9 +138,11 @@ class TasksController extends Controller
     public function destroy($id)
     {
         //
-        $task = Task::findOrFail($id);
+        $task = \App\Task::findOrFail($id);
         
+        if (\Auth::id() === $task->user_id) {
         $task->delete();
+    }
         
         return redirect('/');
     }
