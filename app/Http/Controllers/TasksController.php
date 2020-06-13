@@ -18,7 +18,9 @@ class TasksController extends Controller
     {
         //
     $data = [];
-     if (\Auth::check()) {
+    if (\Auth::check()) { 
+
+                 
         
          $user = \Auth::user();
             // ユーザの投稿の一覧を作成日時の降順で取得
@@ -28,6 +30,7 @@ class TasksController extends Controller
                 'user' => $user,
                 'tasks' => $tasks,
             ];
+         
 
          
          return view('tasks.index', ['tasks' => $tasks,]);
@@ -122,9 +125,12 @@ class TasksController extends Controller
         
         $task = Task::findOrFail($id);
         
+         if (\Auth::id() === $task->user_id) {
+        
         $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
+        }
         
         return redirect('/');
     }
